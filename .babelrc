@@ -3,6 +3,7 @@
         "es2015",
         "stage-2"
     ],
+    "ignore": ["*.json", "*.css", "*.html"],
     "plugins": [
         ["minify-mangle-names"]
     ],

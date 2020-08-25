@@ -7,7 +7,7 @@
   "author": "tranphuquy19@gmail.com",
   "license": "MIT",
   "scripts": {
-    "build": "babel src -d build"
+    "build": "babel src --out-dir build --copy-files"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
