@@ -1,0 +1,17 @@
+{
+  "name": "duolingo-bot-extension",
+  "version": "20.8.25",
+  "description": "Duolingo Bot Extension",
+  "main": "index.js",
+  "repository": "https://github.com/tranphuquy19/DuolingoBotExtension.git",
+  "author": "tranphuquy19@gmail.com",
+  "license": "MIT",
+  "scripts": {
+    "build": "babel src -d build --presets es2015,stage-2"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1"
+  }
+}
