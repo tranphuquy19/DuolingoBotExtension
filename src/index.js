@@ -1,7 +1,9 @@
-const dataTestComponentClassName = 'e4VJZ';
+const dataTestComponentClassName = "e4VJZ";
 
 const CHARACTER_SELECT = "characterSelect";
-const CHARACTER_MATCH = 'characterMatch';
+const CHARACTER_MATCH = "characterMatch";
+const TRANSLATE = "translate";
+const LISTIEN_TAP = "listenTap";
 
 function getChallenge() {
     const dataTestDOM = document.getElementsByClassName(dataTestComponentClassName)[0];
@@ -16,10 +18,16 @@ function solveChallenge() {
     switch (challenge.type) {
         case CHARACTER_SELECT:
             const { choices, correctIndex } = challenge;
-            return { choices, correctIndex };
+            return { choices, correctIndex }; // trắc nghiệm 1 đáp án
         case CHARACTER_MATCH:
             const { pairs } = challenge;
-            return pairs;
+            return pairs; // tập hợp các cặp thẻ
+        case TRANSLATE:
+            const { correctTokens } = challenge;
+            return correctTokens[0]; // nhập đáp án
+        case LISTIEN_TAP:
+            const { correctTokens } = challenge;
+            return correctTokens[0];
         default:
             break;
     }
