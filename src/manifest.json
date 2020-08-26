@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "Duolingo Bot Extension",
-    "version": "1.0",
+    "version": "20.8.25",
     "description": "XP point cheating application on Duolingo",
     "icons": {
         "128": "./img/duolingobot_128x128.png",
@@ -11,5 +11,6 @@
     "browser_action": {
         "default_icon": "./img/duolingobot_16x16.png",
         "default_popup": "./html/index.html"
-    }
+    },
+    "permissions": ["storage"]
 }
