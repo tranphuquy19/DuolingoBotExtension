@@ -8,9 +8,34 @@
         "48": "./img/duolingobot_48x48.png",
         "16": "./img/duolingobot_16x16.png"
     },
-    "browser_action": {
+    "page_action": {
         "default_icon": "./img/duolingobot_16x16.png",
-        "default_popup": "./html/index.html"
+        "default_popup": "./html/index.html",
+        "default_title": "Duolingo Bot"
     },
-    "permissions": ["storage"]
+    "background": {
+        "scripts": [
+            "./javascript/eventPage.js"
+        ],
+        "persistens": false
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://*.duolingo.com/*"
+            ],
+            "js": [
+                "./javascript/content.js"
+            ],
+            "css": [
+                "./css/index.css"
+            ]
+        }
+    ],
+    "permissions": [
+        "activeTab",
+        "storage",
+        "tabs",
+        "https://*.duolingo.com/*"
+    ]
 }
