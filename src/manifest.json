@@ -29,10 +29,12 @@
             ],
             "css": [
                 "./css/index.css"
-            ]
+            ],
+            "run_at":"document_end"
         }
     ],
     "content_security_policy": "script-src 'self'; object-src 'self'",
+    "web_accessible_resources": ["./javascript/index.js"],
     "permissions": [
         "activeTab",
         "storage",

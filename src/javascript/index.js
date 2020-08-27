@@ -114,6 +114,7 @@ function classify() {
 }
 
 function main() {
+    console.log('running');
     try {
         let isPlayerNext = document.querySelectorAll(PLAYER_NEXT)[0].textContent.toUpperCase();
         if (isPlayerNext.valueOf() !== 'CONTINUE') {
@@ -122,7 +123,7 @@ function main() {
         }
         setTimeout(pressEnter, 150);
     } catch (e) {
-        return e;
+        console.log(e);
     }
 }
 
@@ -131,3 +132,4 @@ function solveChallenge() {
 }
 
 // solveChallenge();
+(solveChallenge)();
