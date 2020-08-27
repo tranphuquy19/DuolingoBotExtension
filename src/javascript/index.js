@@ -3,7 +3,7 @@ const dataTestComponentClassName = 'e4VJZ';
 const TIME_OUT = 750;
 
 const CHARACTER_SELECT = 'characterSelect';
-const CHARACTER_MATCH = 'characterMatch';
+const CHARACTER_MATCH = 'characterMatch'; // not yet
 const TRANSLATE = 'translate';
 const LISTEN_TAP = 'listenTap';
 const NAME = 'name';
@@ -11,8 +11,12 @@ const COMPLETE_REVERSE_TRANLATION = 'completeReverseTranslation';
 const LISTEN = 'listen';
 const SELECT = 'select';
 const JUDGE = 'judge';
+const FORM = 'form';
+const LISTEN_COMPREHENSION = 'listenComprehension';
+const READ_COMPREHENSION = 'readComprehension';
 
 const CHALLENGE_CHOICE_CARD = '[data-test="challenge-choice-card"]';
+const CHALLENGE_CHOICE = '[data-test="challenge-choice"]';
 const CHALLENGE_TRANSLATE_INPUT = '[data-test="challenge-translate-input"]';
 const CHALLENGE_JUDGE_TEXT = '[data-test="challenge-judge-text"]';
 const CHALLENGE_TEXT_INPUT = '[data-test="challenge-text-input"]';
@@ -53,6 +57,14 @@ function classify() {
     });
     const challenge = getChallenge();
     switch (challenge.type) {
+        case READ_COMPREHENSION:
+        case LISTEN_COMPREHENSION:
+        case FORM: { // trắc nghiệm 1 đáp án
+            const { choices, correctIndex } = challenge;
+            document.querySelectorAll(CHALLENGE_CHOICE)[correctIndex].dispatchEvent(clickEvent);
+            return { choices, correctIndex };
+        }
+
         case SELECT:
         case CHARACTER_SELECT: { // trắc nghiệm 1 đáp án
             const { choices, correctIndex } = challenge;
