@@ -114,7 +114,7 @@ function main() {
     }
 }
 
-function solveChallenge(autoSolve = true) {
+function solveChallenge() {
     setInterval(main, TIME_OUT);
 }
 
