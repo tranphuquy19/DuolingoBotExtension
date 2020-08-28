@@ -14,12 +14,14 @@ const JUDGE = 'judge';
 const FORM = 'form';
 const LISTEN_COMPREHENSION = 'listenComprehension';
 const READ_COMPREHENSION = 'readComprehension';
+const CHARACTER_INTRO = 'characterIntro';
 
 const CHALLENGE_CHOICE_CARD = '[data-test="challenge-choice-card"]';
 const CHALLENGE_CHOICE = '[data-test="challenge-choice"]';
 const CHALLENGE_TRANSLATE_INPUT = '[data-test="challenge-translate-input"]';
 const CHALLENGE_JUDGE_TEXT = '[data-test="challenge-judge-text"]';
 const CHALLENGE_TEXT_INPUT = '[data-test="challenge-text-input"]';
+const CHALLENGE_TAP_TOKEN = '[data-test="challenge-tap-token"]';
 const PLAYER_NEXT = '[data-test="player-next"]';
 
 function getChallenge() {
@@ -108,13 +110,18 @@ function classify() {
             return correctIndices;
         }
 
+        case CHARACTER_INTRO: { // trắc nghiệm 1 đáp án
+            const { choices, correctIndex } = challenge;
+            document.querySelectorAll(CHALLENGE_JUDGE_TEXT)[correctIndex].dispatchEvent(clickEvent);
+            return { choices, correctIndex };
+        }
+
         default:
             break;
     }
 }
 
 function main() {
-    console.log('running');
     try {
         let isPlayerNext = document.querySelectorAll(PLAYER_NEXT)[0].textContent.toUpperCase();
         if (isPlayerNext.valueOf() !== 'CONTINUE') {
