@@ -15,6 +15,7 @@ const FORM = 'form';
 const LISTEN_COMPREHENSION = 'listenComprehension';
 const READ_COMPREHENSION = 'readComprehension';
 const CHARACTER_INTRO = 'characterIntro';
+const DIALOGUE = 'dialogue';
 
 const CHALLENGE_CHOICE_CARD = '[data-test="challenge-choice-card"]';
 const CHALLENGE_CHOICE = '[data-test="challenge-choice"]';
@@ -110,6 +111,7 @@ function classify() {
             return correctIndices;
         }
 
+        case DIALOGUE:
         case CHARACTER_INTRO: { // trắc nghiệm 1 đáp án
             const { choices, correctIndex } = challenge;
             document.querySelectorAll(CHALLENGE_JUDGE_TEXT)[correctIndex].dispatchEvent(clickEvent);
