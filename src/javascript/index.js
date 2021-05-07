@@ -20,16 +20,48 @@ const DIALOGUE = 'dialogue';
 const CHALLENGE_CHOICE_CARD = '[data-test="challenge-choice-card"]';
 const CHALLENGE_CHOICE = '[data-test="challenge-choice"]';
 const CHALLENGE_TRANSLATE_INPUT = '[data-test="challenge-translate-input"]';
+const CHALLENGE_LISTEN_TAP = '[data-test="challenge-listenTap"]';
 const CHALLENGE_JUDGE_TEXT = '[data-test="challenge-judge-text"]';
 const CHALLENGE_TEXT_INPUT = '[data-test="challenge-text-input"]';
 const CHALLENGE_TAP_TOKEN = '[data-test="challenge-tap-token"]';
 const PLAYER_NEXT = '[data-test="player-next"]';
 
+function getChallengeObj(theObject) {
+    let result = null;
+    if(theObject instanceof Array) {
+        for(let i = 0; i < theObject.length; i++) {
+            result = getChallengeObj(theObject[i]);
+            if (result) {
+                break;
+            }
+        }
+    }
+    else
+    {
+        for(let prop in theObject) {
+            if(prop == 'challenge') {
+                if(typeof theObject[prop] == 'object') {
+                    return theObject;
+                }
+            }
+            if(theObject[prop] instanceof Object || theObject[prop] instanceof Array) {
+                result = getChallengeObj(theObject[prop]);
+                if (result) {
+                    break;
+                }
+            }
+        }
+    }
+    return result;
+}
+
 function getChallenge() {
+    // const dataTestComponentClassName = 'e4VJZ';
     const dataTestDOM = document.getElementsByClassName(dataTestComponentClassName)[0];
-    const dataTestAtrr = Object.keys(dataTestDOM).filter(att => /^__reactInternalInstance/g.test(att))[0];
-    const childDataTestProps = dataTestDOM[dataTestAtrr].memoizedProps.children.props;
-    const { challenge } = childDataTestProps;
+    const dataTestAtrr = Object.keys(dataTestDOM).filter(att => /^__reactProps/g.test(att))[0];
+    const childDataTestProps = dataTestDOM[dataTestAtrr];
+    const { challenge } = getChallengeObj(childDataTestProps);
+    console.log(challenge)
     return challenge;
 }
 
@@ -97,7 +129,7 @@ function classify() {
             return text;
         }
 
-        case LISTEN_TAP:
+        case LISTEN_TAP: 
         case LISTEN: { // nghe và điền vào ô input
             const { prompt } = challenge;
             let textInputElement = document.querySelectorAll(CHALLENGE_TRANSLATE_INPUT)[0];
