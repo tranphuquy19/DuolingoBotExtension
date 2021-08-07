@@ -83,7 +83,7 @@ function getChallengeObj(theObject) {
 }
 
 function getChallenge() {
-    const dataTestComponentClassName = 'e4VJZ';
+    // const dataTestComponentClassName = 'e4VJZ';
     const dataTestDOM = document.getElementsByClassName(dataTestComponentClassName)[0];
 
     if (!dataTestDOM) {
