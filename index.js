@@ -18,7 +18,7 @@ const TIME_OUT = 1000;
 
 // Challenge types
 const CHARACTER_SELECT_TYPE = 'characterSelect';
-const CHARACTER_MATCH_TYPE = 'characterMatch'; // not yet
+const CHARACTER_MATCH_TYPE = 'characterMatch';
 const TRANSLATE_TYPE = 'translate';
 const LISTEN_TAP_TYPE = 'listenTap';
 const NAME_TYPE = 'name';
