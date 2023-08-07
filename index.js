@@ -1,16 +1,25 @@
 // ==UserScript==
 // @name         Duolingo-Cheat-Tool
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  Auto answer Duolingo script!
-// @author       Tran Quy <tranphuquy19@gmail.com>
-// @match        https://www.duolingo.com/skill*
+// @author       tranphuquy19
+// @match        https://www.duolingo.com/lesson*
+// @match        https://www.duolingo.com/learn*
 // @icon         https://www.google.com/s2/favicons?domain=duolingo.com
 // @grant        none
+// @run-at       document-end
 // ==/UserScript==
 
+// WARNING/DISCLAIMER: Cheating can lead to account ban. The script is research-oriented in programming.
+// Enjoy learning new languages. Thank you!
+// Update 2023-Aug-07: Fix bug, add new challenge types
+
+
 const DEBUG = true;
+let AUTO_PRACTICE = localStorage.getItem('AUTO_PRACTICE') === 'true' ? true : false; // earn exp by practice
 let mainInterval;
+let practiceInterval;
 
 const dataTestComponentClassName = 'e4VJZ';
 
@@ -19,6 +28,7 @@ const TIME_OUT = 1000;
 // Challenge types
 const CHARACTER_SELECT_TYPE = 'characterSelect';
 const CHARACTER_MATCH_TYPE = 'characterMatch';
+const MATCH_TYPE = 'match';
 const TRANSLATE_TYPE = 'translate';
 const LISTEN_TAP_TYPE = 'listenTap';
 const NAME_TYPE = 'name';
@@ -34,19 +44,23 @@ const DIALOGUE_TYPE = 'dialogue';
 const SELECT_TRANSCRIPTION_TYPE = 'selectTranscription';
 const SPEAK_TYPE = 'speak';
 const SELECT_PRONUNCIATION_TYPE = 'selectPronunciation';
+const ASSIST_TYPE = 'assist';
+const LISTEN_MATCH_TYPE = 'listenMatch';
+const LISTEN_COMPLETE_TYPE = 'listenComplete';
 
 // Query DOM keys
-const CHALLENGE_CHOICE_CARD = '[data-test="challenge-choice-card"]';
+const CHALLENGE_CHOICE_CARD = '[data-test="challenge-choice"]';
 const CHALLENGE_CHOICE = '[data-test="challenge-choice"]';
 const CHALLENGE_TRANSLATE_INPUT = '[data-test="challenge-translate-input"]';
 const CHALLENGE_LISTEN_TAP = '[data-test="challenge-listenTap"]';
 const CHALLENGE_JUDGE_TEXT = '[data-test="challenge-judge-text"]';
 const CHALLENGE_TEXT_INPUT = '[data-test="challenge-text-input"]';
-const CHALLENGE_TAP_TOKEN = '[data-test="challenge-tap-token"]';
+const CHALLENGE_TAP_TOKEN = '[data-test*="-challenge-tap-token"]';
 const PLAYER_NEXT = '[data-test="player-next"]';
 const PLAYER_SKIP = '[data-test="player-skip"]';
 const BLAME_INCORRECT = '[data-test="blame blame-incorrect"]';
 const CHARACTER_MATCH = '[data-test="challenge challenge-characterMatch"]';
+const PRACTICE_BTN = '[data-test="global-practice"]';
 
 const clickEvent = new MouseEvent('click', {
     view: window,
@@ -93,12 +107,14 @@ function getChallenge() {
         const dataTestAtrr = Object.keys(dataTestDOM).filter(att => /^__reactProps/g.test(att))[0];
         const childDataTestProps = dataTestDOM[dataTestAtrr];
         const { challenge } = getChallengeObj(childDataTestProps);
+        if (DEBUG) console.log('challenge', challenge);
         return challenge;
     }
 }
 
-function pressEnter() {
-    document.dispatchEvent(new KeyboardEvent('keydown', { 'keyCode': 13, 'which': 13 }));
+function nextQuestion() {
+    // document.dispatchEvent(new KeyboardEvent('keydown', { 'keyCode': 13, 'which': 13 }));
+    document.querySelectorAll(PLAYER_NEXT)[0].dispatchEvent(clickEvent);
 }
 
 function dynamicInput(element, msg) {
@@ -124,9 +140,10 @@ function classify() {
         case SELECT_PRONUNCIATION_TYPE:
         case READ_COMPREHENSION_TYPE:
         case LISTEN_COMPREHENSION_TYPE:
+        case ASSIST_TYPE:
         case FORM_TYPE: { // trắc nghiệm 1 đáp án
             const { choices, correctIndex } = challenge;
-            if (DEBUG) console.log('READ_COMPREHENSION LISTEN_COMPREHENSION FORM', { choices, correctIndex });
+            if (DEBUG) console.log('READ_COMPREHENSION LISTEN_COMPREHENSION FORM ASSIST', { choices, correctIndex });
             document.querySelectorAll(CHALLENGE_CHOICE)[correctIndex].dispatchEvent(clickEvent);
             return { choices, correctIndex };
         }
@@ -139,12 +156,47 @@ function classify() {
             return { choices, correctIndex };
         }
 
+        case MATCH_TYPE: {
+            const { pairs } = challenge;
+            // remove all span tag element
+            const tokens = Array.from(document.querySelectorAll(CHALLENGE_TAP_TOKEN)).filter(token => token.tagName !== 'SPAN');
+            pairs.forEach((pair) => {
+                for (let i = 0; i < tokens.length; i++) {
+                    const _innerText = tokens[i].innerText.split('\n')[1];
+                    if (_innerText === pair.fromToken || _innerText === pair.learningToken) {
+                        tokens[i].dispatchEvent(clickEvent);
+                    }
+                }
+            })
+            return { pairs };
+        }
+
+        case LISTEN_MATCH_TYPE: {
+            const { pairs } = challenge;
+            const tokens = Array.from(document.querySelectorAll(CHALLENGE_TAP_TOKEN));
+            // click 2 token has same attribute 'data-test'
+            for (let i = 0; i < tokens.length; i++) {
+                const firstToken = tokens[i];
+                for (let j = i + 1; j < tokens.length; j++) {
+                    const secondToken = tokens[j];
+                    if (firstToken.getAttribute('data-test') === secondToken.getAttribute('data-test')) {
+                        firstToken.dispatchEvent(clickEvent);
+                        secondToken.dispatchEvent(clickEvent);
+                    }
+                }
+            }
+            return { pairs };
+        }
+
+
+
         case CHARACTER_MATCH_TYPE: { // tập hợp các cặp thẻ
             const { pairs } = challenge;
             const tokens = document.querySelectorAll(CHALLENGE_TAP_TOKEN);
             pairs.forEach((pair) => {
-                for(let i = 0; i < tokens.length; i++) {
-                    if(tokens[i].innerText === pair.transliteration || tokens[i].innerText === pair.character) {
+                for (let i = 0; i < tokens.length; i++) {
+                    const _innerText = tokens[i].innerText.split('\n')[1];
+                    if (_innerText === pair.transliteration || _innerText === pair.character) {
                         tokens[i].dispatchEvent(clickEvent);
                     }
                 }
@@ -154,8 +206,8 @@ function classify() {
 
         case TRANSLATE_TYPE: {
             const { correctTokens, correctSolutions } = challenge;
-            if (DEBUG) console.log('TRANSLATE', { correctTokens });
             if (correctTokens) {
+                if (DEBUG) console.log('TRANSLATE_correctTokens', { correctTokens });
                 const tokens = document.querySelectorAll(CHALLENGE_TAP_TOKEN);
                 let ignoreTokeIndexes = [];
                 for (let correctTokenIndex in correctTokens) {
@@ -165,12 +217,13 @@ function classify() {
                         if (token.innerText === correctTokens[correctTokenIndex]) {
                             token.dispatchEvent(clickEvent);
                             ignoreTokeIndexes.push(tokenIndex);
-                            if(DEBUG) console.log(`correctTokenIndex [${correctTokens[correctTokenIndex]}] - tokenIndex [${token.innerText}]`);
+                            if (DEBUG) console.log(`correctTokenIndex [${correctTokens[correctTokenIndex]}] - tokenIndex [${token.innerText}]`);
                             break;
                         };
                     }
                 }
-            } else if (correctSolutions) {
+            } else if (!!correctSolutions) {
+                if (DEBUG) console.log('TRANSLATE_correctSolutions', { correctSolutions });
                 let textInputElement = document.querySelectorAll(CHALLENGE_TRANSLATE_INPUT)[0];
                 dynamicInput(textInputElement, correctSolutions[0]);
             }
@@ -200,14 +253,26 @@ function classify() {
             const { correctTokens } = challenge;
             if (DEBUG) console.log('LISTEN_TAP', { correctTokens });
             const tokens = document.querySelectorAll(CHALLENGE_TAP_TOKEN);
-            for (let wordIndex in correctTokens) {
-                tokens.forEach((token) => {
-                    if (token.innerText === correctTokens[wordIndex]) {
-                        token.dispatchEvent(clickEvent);
-                    };
-                });
+            const ignoreTokens = [];
+            for (let i = 0; i < correctTokens.length; i++) {
+                for (let j = 0; j < tokens.length; j++) {
+                    if (tokens[j].innerText === correctTokens[i] && !ignoreTokens.includes(j)) {
+                        ignoreTokens.push(j);
+                        tokens[j].dispatchEvent(clickEvent);
+                        break;
+                    }
+                }
             }
             return { correctTokens };
+        }
+
+        case LISTEN_COMPLETE_TYPE: {
+            const { displayTokens } = challenge;
+            if (DEBUG) console.log('LISTEN_COMPLETE', { displayTokens });
+            let textInputElement = document.querySelectorAll(CHALLENGE_TEXT_INPUT)[0];
+            const correctAnswer = displayTokens.find(token => token.isBlank).text;
+            dynamicInput(textInputElement, correctAnswer);
+            return { displayTokens };
         }
 
         case LISTEN_TYPE: { // nghe và điền vào ô input
@@ -260,21 +325,35 @@ function breakWhenIncorrect() {
     };
 }
 
+function clickPracticeButton() {
+    try {
+        document.querySelectorAll(PRACTICE_BTN)[0].dispatchEvent(clickEvent);
+    } catch (e) {
+        console.log(e);
+    }
+}
+
 function main() {
     try {
         let isPlayerNext = document.querySelectorAll(PLAYER_NEXT)[0].textContent.toUpperCase();
         if (isPlayerNext.valueOf() !== 'CONTINUE') {
             classify();
             breakWhenIncorrect()
-            pressEnter();
+            nextQuestion();
         }
-        setTimeout(pressEnter, 150);
+        setTimeout(nextQuestion, 150);
+
     } catch (e) {
         console.log(e);
     }
 }
 
 function solveChallenge() {
+    AUTO_PRACTICE = localStorage.getItem('AUTO_PRACTICE') || false; // earn exp by practice
+    if (AUTO_PRACTICE && window.location.href.endsWith('/learn')) {
+        // click practice button
+        practiceInterval = setTimeout(clickPracticeButton, 5000);
+    }
     mainInterval = setInterval(main, TIME_OUT);
     console.log(`to stop run this command clearInterval(${mainInterval})`);
 }
